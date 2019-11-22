@@ -55,8 +55,7 @@
   },
   "scripts": {
     "test": "jest",
-    "coverage": "cake coverage",
-    "coveralls": "cake coveralls",
+    "coverage": "jest --coverage",
     "doc": "cake doc",
     "build": "webpack-cli --mode production",
     "build:dev": "webpack-cli --progress --colors --watch --mode development"
