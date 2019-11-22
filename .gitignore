@@ -1,5 +1,5 @@
 node_modules
+lib/
 examples/*.js
 build/*.js
 /coverage.html
-/lib/osc-utilities.js

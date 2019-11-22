@@ -106,7 +106,7 @@
 // [spec]: http://opensoundcontrol.org/spec-1_0
 
   var utils, coffee;
-  utils = require("./osc-utilities");
+  utils = require("./osc-utilities.coffee");
 // ~api~
 //## Exported functions
 //
