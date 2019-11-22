@@ -42,6 +42,7 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage",
+    "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "doc": "cake doc",
     "build": "webpack-cli --mode production",
     "build:dev": "webpack-cli --progress --colors --watch --mode development"
