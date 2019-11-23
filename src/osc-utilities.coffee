@@ -11,10 +11,6 @@
 # the objects we're dealing with here.
 #
 
-# ## Dependencies
-# require the minimal binary packing utilities
-binpack = require "binpack"
-
 # ## Exported Functions
 
 # Utility for working with buffers. takes an array of buffers,
@@ -113,9 +109,8 @@ exports.splitOscString = (buffer, strict) ->
 
 # This has similar semantics to splitOscString but works with integers instead.
 # bytes is the number of bytes in the integer, defaults to 4.
-exports.splitInteger = (buffer, type) ->
-  type = "Int32" if not type?
-  bytes = (binpack["pack" + type] 0).length
+exports.splitInteger = (buffer) ->
+  bytes = 4
 
   if buffer.length < bytes
     throw new Error "buffer is not big enough for integer type"
@@ -123,7 +118,7 @@ exports.splitInteger = (buffer, type) ->
   num = 0
 
   # integers are stored in big endian format.
-  value = binpack["unpack" + type] buffer[0...bytes], "big"
+  value = buffer.readInt32BE()
 
   rest = buffer[bytes...(buffer.length)]
 
@@ -132,20 +127,15 @@ exports.splitInteger = (buffer, type) ->
 # Split off an OSC timetag from buffer
 # returning {timetag: [seconds, fractionalSeconds], rest: restOfBuffer}
 exports.splitTimetag = (buffer) ->
-  type = "UInt32"
-  bytes = (binpack["pack" + type] 0).length
+  bytes = 4
 
   if buffer.length < (bytes * 2)
     throw new Error "buffer is not big enough to contain a timetag"
 
   # integers are stored in big endian format.
-  a = 0
-  b = bytes
-  seconds = binpack["unpack" + type] buffer[a...b], "big"
-  c = bytes
-  d = bytes + bytes
-  fractional = binpack["unpack" + type] buffer[c...d], "big"
-  rest = buffer[d...(buffer.length)]
+  seconds = buffer.readUInt32BE()
+  fractional = buffer.readUInt32BE(4)
+  rest = buffer[(bytes * 2)...(buffer.length)]
 
   return {timetag: [seconds, fractional], rest: rest}
 
@@ -217,16 +207,17 @@ exports.toTimetagBuffer = (timetag) ->
     timetag = exports.dateToTimetag(timetag)
   else if timetag.length != 2
     throw new Error("Invalid timetag" + timetag)
-  type = "UInt32"
-  high = binpack["pack" + type] timetag[0], "big"
-  low = binpack["pack" + type] timetag[1], "big"
-  return exports.concat([high, low])
+  buf = Buffer.alloc(8)
+  buf.writeUInt32BE(timetag[0])
+  buf.writeUInt32BE(timetag[1], 4)
+  return buf
 
-exports.toIntegerBuffer = (number, type) ->
-  type = "Int32" if not type?
+exports.toIntegerBuffer = (number) ->
   if typeof number isnt "number"
     throw new Error "cannot pack a non-number into an integer buffer"
-  binpack["pack" + type] number, "big"
+  buf = Buffer.alloc(4)
+  buf.writeInt32BE(number)
+  return buf
 
 # This mapping contains three fields for each type:
 #  - representation : the javascript string representation of this type.
@@ -265,20 +256,24 @@ oscTypeCodes =
   f : {
     representation : "float"
     split : (buffer, strict) ->
-      value : (binpack.unpackFloat32 buffer[0...4], "big")
+      value : buffer.readFloatBE(0)
       rest : buffer[4...(buffer.length)]
     toArg : (value, strict) ->
       throw new Error "expected number" if typeof value isnt "number"
-      binpack.packFloat32 value, "big"
+      buf = Buffer.alloc(4)
+      buf.writeFloatBE(value)
+      return buf
   }
   d : {
     representation : "double"
     split : (buffer, strict) ->
-      value : (binpack.unpackFloat64 buffer[0...8], "big")
+      value : buffer.readDoubleBE(0)
       rest : buffer[8...(buffer.length)]
     toArg : (value, strict) ->
       throw new Error "expected number" if typeof value isnt "number"
-      binpack.packFloat64 value, "big"
+      buf = Buffer.alloc(8)
+      buf.writeDoubleBE(value)
+      return buf
   }
   b : {
     representation : "blob"

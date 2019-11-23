@@ -18,9 +18,6 @@
     "type": "git",
     "url": "http://github.com/russellmcc/node-osc-min.git"
   },
-  "dependencies": {
-    "binpack": "~0"
-  },
   "devDependencies": {
     "mocha": "2.*",
     "@babel/core": "7.7.2",
