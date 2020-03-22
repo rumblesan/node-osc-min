@@ -29,7 +29,7 @@ exports.concat = (buffers) ->
   sumLength = 0
   sumLength += buffer.length for buffer in buffers
 
-  destBuffer = new Buffer(sumLength)
+  destBuffer = Buffer.alloc(sumLength)
 
   copyTo = 0
   for buffer in buffers
@@ -63,7 +63,7 @@ exports.toOscString = (str, strict) ->
     str += "\u0000"
 
   # create a new buffer from the string.
-  new Buffer(str)
+  Buffer.from(str)
 
 #
 # Try to split a buffer into a leading osc-string and the rest of the buffer,
@@ -84,7 +84,7 @@ exports.splitOscString = (buffer, strict) ->
   # the rest of the code doesn't apply if there's no null character.
   if nullIndex == -1
     throw new Error "All osc-strings must contain a null character" if strict
-    return {string:rawStr, rest:(new Buffer 0)}
+    return {string:rawStr, rest:(Buffer.alloc(0))}
 
   # extract the string.
   str = rawStr[0...nullIndex]
@@ -293,7 +293,7 @@ oscTypeCodes =
     value : true
   toArg : (value, strict) ->
     throw new Error "true must be true" if not value and strict
-    new Buffer 0
+    Buffer.alloc(0)
   }
   F : {
   representation : "false"
@@ -302,7 +302,7 @@ oscTypeCodes =
     value : false
   toArg : (value, strict) ->
     throw new Error "false must be false" if value and strict
-    new Buffer 0
+    Buffer.alloc(0)
   }
   N : {
   representation : "null"
@@ -311,7 +311,7 @@ oscTypeCodes =
     value : null
   toArg : (value, strict) ->
     throw new Error "null must be false" if value and strict
-    new Buffer 0
+    Buffer.alloc(0)
   }
   I : {
   representation : "bang"
@@ -319,7 +319,7 @@ oscTypeCodes =
     rest : buffer
     value : "bang"
   toArg : (value, strict) ->
-    new Buffer 0
+    Buffer.alloc(0)
   }
 
 # simple function that converts a type code into it's javascript
@@ -639,7 +639,7 @@ exports.applyMessageTranformerToBundle = (transform) -> (buffer) ->
   totalLength += 4 + elem.length for elem in elems
 
   # okay, now we have to reconcatenate everything.
-  outBuffer = new Buffer totalLength
+  outBuffer = Buffer.alloc(totalLength)
   bundleTagBuffer.copy outBuffer, 0
   timetagBuffer.copy outBuffer, bundleTagBuffer.length
   copyIndex = bundleTagBuffer.length + timetagBuffer.length

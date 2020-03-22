@@ -118,9 +118,9 @@
 // `strict` is an optional parameter that makes the function fail more often.
   exports.fromBuffer = function(buffer, strict) {
     if (buffer instanceof ArrayBuffer) {
-      buffer = new Buffer(new Uint8Array(buffer));
+      buffer = Buffer.from(new Uint8Array(buffer));
     } else if (buffer instanceof Uint8Array) {
-      buffer = new Buffer(buffer);
+      buffer = Buffer.from(buffer);
     }
     return utils.fromOscPacket(buffer, strict);
   };
